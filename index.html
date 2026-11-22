@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔐 Hash Generator · copy‑ready</title>
+    <title>🔐 Hash Generator · text &amp; file · copy‑ready</title>
     <style>
         * {
             box-sizing: border-box;
@@ -68,8 +68,57 @@
             padding-left: 1rem;
         }
 
+        /* ----- Tab switcher ----- */
+        .mode-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.8rem;
+            background: #0d1222;
+            padding: 0.45rem;
+            border-radius: 2rem;
+            border: 1px solid #232e48;
+            width: fit-content;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #8d9fc7;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 0.6rem 1.8rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            letter-spacing: 0.2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: #c2d2ff;
+        }
+
+        .tab-btn.active {
+            background: #1e2b4a;
+            color: #e3ebff;
+            box-shadow: 0 2px 12px rgba(60, 110, 255, 0.25);
+            border: 1px solid #314a7a;
+        }
+
+        /* ----- Input areas ----- */
         .input-area {
             margin-bottom: 2.5rem;
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
         }
 
         label {
@@ -109,6 +158,99 @@
             font-weight: 300;
         }
 
+        /* ----- File drop / select ----- */
+        .file-drop-area {
+            background: #0d1222;
+            border: 2px dashed #2c3d60;
+            border-radius: 1.8rem;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            transition: 0.2s;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .file-drop-area:hover,
+        .file-drop-area.dragover {
+            border-color: #4a7dff;
+            background: #0f1628;
+            box-shadow: 0 0 0 4px rgba(74, 125, 255, 0.15);
+        }
+
+        .file-drop-area .icon {
+            font-size: 2.4rem;
+            filter: drop-shadow(0 0 12px #3b5bdb);
+        }
+
+        .file-drop-area .hint {
+            color: #8d9fc7;
+            font-size: 0.9rem;
+        }
+
+        .file-drop-area .file-name {
+            color: #b7d0ff;
+            font-weight: 500;
+            font-size: 0.95rem;
+            word-break: break-all;
+            max-width: 100%;
+            padding: 0.2rem 1rem;
+            background: #1a2340;
+            border-radius: 40px;
+            border: 1px solid #2f4270;
+            display: none;
+        }
+
+        .file-drop-area .file-name.visible {
+            display: inline-block;
+        }
+
+        .file-drop-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .file-meta {
+            font-size: 0.8rem;
+            color: #5e71a0;
+            margin-top: 0.4rem;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 0.8rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 0.6rem;
+        }
+
+        .clear-file-btn {
+            background: transparent;
+            border: 1px solid #3b4b70;
+            color: #9db1e0;
+            font-size: 0.75rem;
+            padding: 0.35rem 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+
+        .clear-file-btn:hover {
+            background: #1e2b4a;
+            border-color: #4a7dff;
+            color: #ffffff;
+        }
+
+        /* ----- Hash grid (shared) ----- */
         .hash-grid {
             display: flex;
             flex-direction: column;
@@ -168,10 +310,6 @@
             cursor: default;
         }
 
-        .hash-value span {
-            opacity: 0.9;
-        }
-
         .copy-btn {
             display: inline-flex;
             align-items: center;
@@ -205,19 +343,6 @@
             background: #1b4b3c;
             border-color: #2e8b6b;
             color: #b8f0d9;
-        }
-
-        .empty-state {
-            color: #4d5e84;
-            font-style: italic;
-            font-size: 0.9rem;
-            background: #0b0f1a;
-            padding: 0.9rem 1.4rem;
-            border-radius: 1.2rem;
-            border: 1px dashed #2c3d60;
-            min-height: 3.5rem;
-            display: flex;
-            align-items: center;
         }
 
         .footer-note {
@@ -260,6 +385,15 @@
                 font-size: 0.7rem;
                 min-width: 65px;
             }
+
+            .tab-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            .file-drop-area {
+                padding: 1.4rem 1rem;
+            }
         }
     </style>
 </head>
@@ -268,11 +402,38 @@
     <h1>hash generator</h1>
     <div class="sub">MD5 · SHA‑1 · SHA‑256 · SHA‑384 · SHA‑512 · RIPEMD‑160</div>
 
-    <div class="input-area">
-        <label for="inputData">📥 your text / data</label>
-        <textarea id="inputData" placeholder="Type anything… e.g. 'hello world' or a password or binary data" autofocus>hello world</textarea>
+    <!-- Mode tabs -->
+    <div class="mode-tabs">
+        <button class="tab-btn active" id="tabText" data-mode="text">📝 Text</button>
+        <button class="tab-btn" id="tabFile" data-mode="file">📁 File</button>
     </div>
 
+    <!-- Text input panel -->
+    <div class="panel active" id="panelText">
+        <div class="input-area">
+            <label for="inputData">📥 your text / data</label>
+            <textarea id="inputData" placeholder="Type anything… e.g. 'hello world' or a password" autofocus>hello world</textarea>
+        </div>
+    </div>
+
+    <!-- File input panel -->
+    <div class="panel" id="panelFile">
+        <div class="input-area">
+            <label>📁 select or drop a file</label>
+            <div class="file-drop-area" id="fileDropArea">
+                <div class="icon">📂</div>
+                <div class="hint">Click to browse or drag &amp; drop a file here</div>
+                <div class="file-name" id="fileNameDisplay"></div>
+                <div class="file-meta" id="fileMeta"></div>
+                <input type="file" id="fileInput">
+                <div class="file-actions" id="fileActions" style="display:none;">
+                    <button class="clear-file-btn" id="clearFileBtn">✕ remove file</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hash results (shared for both modes) -->
     <div class="hash-grid" id="hashGrid">
         <!-- dynamically generated by JS -->
     </div>
@@ -304,8 +465,14 @@
             return hex;
         }
 
-        // ----- MD5 implementation (public domain style, adapted) -----
-        function md5(string) {
+        // ----- MD5 implementation (works on string, but we also need it for bytes) -----
+        // For files we need an MD5 that works on Uint8Array. We'll include a byte-oriented version.
+        // However, the string-based md5 is fine for text. For binary files we need a different approach.
+        // Easiest: convert file to a "binary string" and use the same md5? That can be slow and memory heavy,
+        // but works for reasonable sizes. Better: use a Uint8Array MD5 implementation.
+        // Let's include a compact Uint8Array MD5 (from a public domain source, adapted).
+        function md5Bytes(bytes) {
+            // This implementation expects a Uint8Array, returns hex string
             function RotateLeft(lValue, iShiftBits) {
                 return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
             }
@@ -356,19 +523,20 @@
                 return AddUnsigned(RotateLeft(a, s), b);
             }
 
-            function ConvertToWordArray(string) {
+            // Convert a Uint8Array to word array (little-endian words)
+            function bytesToWords(bytes) {
                 var lWordCount;
-                var lMessageLength = string.length;
+                var lMessageLength = bytes.length;
                 var lNumberOfWords_temp1 = lMessageLength + 8;
                 var lNumberOfWords_temp2 = (lNumberOfWords_temp1 - (lNumberOfWords_temp1 % 64)) / 64;
                 var lNumberOfWords = (lNumberOfWords_temp2 + 1) * 16;
-                var lWordArray = Array(lNumberOfWords - 1);
+                var lWordArray = new Array(lNumberOfWords - 1);
                 var lBytePosition = 0;
                 var lByteCount = 0;
                 while (lByteCount < lMessageLength) {
                     lWordCount = (lByteCount - (lByteCount % 4)) / 4;
                     lBytePosition = (lByteCount % 4) * 8;
-                    lWordArray[lWordCount] = (lWordArray[lWordCount] | (string.charCodeAt(lByteCount) << lBytePosition));
+                    lWordArray[lWordCount] = (lWordArray[lWordCount] | (bytes[lByteCount] << lBytePosition));
                     lByteCount++;
                 }
                 lWordCount = (lByteCount - (lByteCount % 4)) / 4;
@@ -389,7 +557,7 @@
                 return WordToHexValue;
             }
 
-            var x = ConvertToWordArray(string);
+            var x = bytesToWords(bytes);
             var a = 0x67452301, b = 0xEFCDAB89, c = 0x98BADCFE, d = 0x10325476;
             var S11 = 7, S12 = 12, S13 = 17, S14 = 22;
             var S21 = 5, S22 = 9, S23 = 14, S24 = 20;
@@ -476,19 +644,47 @@
             return temp.toLowerCase();
         }
 
-        // ----- Compute a single hash using Web Crypto or MD5 fallback -----
-        async function computeHash(algo, dataString) {
+        // ----- Text-based MD5 (for text input) -----
+        function md5String(string) {
+            // Convert string to UTF-8 bytes then use md5Bytes
+            const encoder = new TextEncoder();
+            return md5Bytes(encoder.encode(string));
+        }
+
+        // ----- Compute hash for a given algorithm and data (string or Uint8Array) -----
+        async function computeHash(algo, inputData) {
             try {
+                const isString = typeof inputData === 'string';
+                const isBytes = inputData instanceof Uint8Array;
+
                 if (algo === 'MD5') {
-                    return md5(dataString);
+                    if (isString) {
+                        return md5String(inputData);
+                    } else if (isBytes) {
+                        return md5Bytes(inputData);
+                    } else {
+                        return null;
+                    }
                 }
+
                 if (algo === 'RIPEMD160') {
-                    // Not supported natively in Web Crypto
+                    return null; // Not supported
+                }
+
+                // For Web Crypto, we need a Uint8Array
+                let dataBytes;
+                if (isString) {
+                    const encoder = new TextEncoder();
+                    dataBytes = encoder.encode(inputData);
+                } else if (isBytes) {
+                    dataBytes = inputData;
+                } else {
                     return null;
                 }
-                const encoder = new TextEncoder();
-                const data = encoder.encode(dataString);
-                const hashBuffer = await crypto.subtle.digest(algo, data);
+
+                // Ensure we pass a copy of the ArrayBuffer to avoid detached buffer issues
+                const buffer = dataBytes.buffer.slice(dataBytes.byteOffset, dataBytes.byteOffset + dataBytes.byteLength);
+                const hashBuffer = await crypto.subtle.digest(algo, buffer);
                 return bufToHex(hashBuffer);
             } catch (e) {
                 console.warn(`Hash error for ${algo}:`, e);
@@ -499,6 +695,21 @@
         // ----- DOM elements -----
         const inputEl = document.getElementById('inputData');
         const hashGrid = document.getElementById('hashGrid');
+        const tabText = document.getElementById('tabText');
+        const tabFile = document.getElementById('tabFile');
+        const panelText = document.getElementById('panelText');
+        const panelFile = document.getElementById('panelFile');
+        const fileDropArea = document.getElementById('fileDropArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const fileMeta = document.getElementById('fileMeta');
+        const fileActions = document.getElementById('fileActions');
+        const clearFileBtn = document.getElementById('clearFileBtn');
+
+        // State
+        let currentMode = 'text'; // 'text' or 'file'
+        let currentFile = null;   // File object
+        let currentFileBytes = null; // Uint8Array of file content
 
         // ----- Build the UI grid dynamically -----
         function buildUI() {
@@ -525,7 +736,6 @@
                 copyBtn.textContent = '📋 copy';
                 copyBtn.dataset.targetId = valueDiv.id;
 
-                // Click handler for copy button
                 copyBtn.addEventListener('click', async function(e) {
                     e.preventDefault();
                     const targetId = this.dataset.targetId;
@@ -534,7 +744,6 @@
 
                     const textToCopy = targetEl.innerText.trim();
                     if (!textToCopy || textToCopy === '—' || textToCopy.includes('⏳') || textToCopy.includes('⚠️')) {
-                        // Nothing meaningful to copy
                         this.textContent = '❌';
                         this.classList.add('copied');
                         setTimeout(() => {
@@ -553,7 +762,6 @@
                             this.classList.remove('copied');
                         }, 1200);
                     } catch (err) {
-                        // fallback: select text and show instruction
                         try {
                             const range = document.createRange();
                             range.selectNodeContents(targetEl);
@@ -579,13 +787,34 @@
             });
         }
 
-        // ----- Update all hashes based on input -----
+        // ----- Update all hashes based on current mode and data -----
         async function updateHashes() {
-            const text = inputEl.value;
             const hashContainers = hashGrid.querySelectorAll('.hash-value');
 
-            // Empty input -> placeholder
-            if (!text) {
+            // Determine what data to use
+            let dataToHash = null;
+            let hasData = false;
+
+            if (currentMode === 'text') {
+                const text = inputEl.value;
+                if (text) {
+                    dataToHash = text;
+                    hasData = true;
+                }
+            } else {
+                // File mode
+                if (currentFileBytes && currentFileBytes.length > 0) {
+                    dataToHash = currentFileBytes;
+                    hasData = true;
+                } else if (currentFileBytes && currentFileBytes.length === 0) {
+                    // Empty file — still hashable (empty input)
+                    dataToHash = new Uint8Array(0);
+                    hasData = true;
+                }
+            }
+
+            // If no data -> show placeholder
+            if (!hasData) {
                 hashContainers.forEach(container => {
                     container.innerText = '—';
                     container.style.color = '#4d5e84';
@@ -609,7 +838,7 @@
                 if (!container) return;
 
                 try {
-                    const hashHex = await computeHash(algo, text);
+                    const hashHex = await computeHash(algo, dataToHash);
                     if (hashHex) {
                         container.innerText = hashHex;
                         container.style.color = '#b7d0ff';
@@ -635,28 +864,128 @@
             await Promise.all(promises);
         }
 
-        // ----- debounce input to avoid spamming crypto on each keystroke -----
+        // ----- Debounce for text input -----
         let debounceTimer;
         function debouncedUpdate() {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(updateHashes, 120);
         }
 
-        // ----- initialize -----
+        // ----- Switch mode -----
+        function switchMode(mode) {
+            currentMode = mode;
+
+            // Update tabs
+            tabText.classList.toggle('active', mode === 'text');
+            tabFile.classList.toggle('active', mode === 'file');
+
+            // Update panels
+            panelText.classList.toggle('active', mode === 'text');
+            panelFile.classList.toggle('active', mode === 'file');
+
+            // Update hashes
+            updateHashes();
+        }
+
+        // ----- Handle file selection -----
+        async function handleFile(file) {
+            if (!file) {
+                // Clear file
+                currentFile = null;
+                currentFileBytes = null;
+                fileNameDisplay.textContent = '';
+                fileNameDisplay.classList.remove('visible');
+                fileMeta.textContent = '';
+                fileActions.style.display = 'none';
+                fileInput.value = '';
+                updateHashes();
+                return;
+            }
+
+            currentFile = file;
+
+            // Show file name and size
+            fileNameDisplay.textContent = file.name;
+            fileNameDisplay.classList.add('visible');
+
+            const sizeKB = (file.size / 1024).toFixed(2);
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            let sizeStr = file.size < 1024 ? `${file.size} B` :
+                          file.size < 1024 * 1024 ? `${sizeKB} KB` :
+                          `${sizeMB} MB`;
+            fileMeta.textContent = `${sizeStr} · ${file.type || 'unknown type'}`;
+            fileActions.style.display = 'flex';
+
+            // Read file as ArrayBuffer
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                currentFileBytes = new Uint8Array(arrayBuffer);
+            } catch (e) {
+                console.warn('Error reading file:', e);
+                currentFileBytes = null;
+            }
+
+            // Update hashes
+            updateHashes();
+        }
+
+        // ----- Initialize -----
         function init() {
             buildUI();
 
-            // Set initial value
+            // Set initial text value
             inputEl.value = 'hello world';
 
-            // Initial update
+            // Initial hash update
             updateHashes();
 
-            // Event listener
+            // Text input event
             inputEl.addEventListener('input', debouncedUpdate);
+
+            // Tab switching
+            tabText.addEventListener('click', () => switchMode('text'));
+            tabFile.addEventListener('click', () => switchMode('file'));
+
+            // File input
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                handleFile(file);
+            });
+
+            // Drag & drop
+            fileDropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileDropArea.classList.add('dragover');
+            });
+
+            fileDropArea.addEventListener('dragleave', () => {
+                fileDropArea.classList.remove('dragover');
+            });
+
+            fileDropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileDropArea.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    // Update the hidden file input
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    fileInput.files = dt.files;
+                    handleFile(file);
+                }
+            });
+
+            // Clear file button
+            clearFileBtn.addEventListener('click', () => {
+                handleFile(null);
+            });
+
+            // Prevent default drag behavior on the whole card
+            document.querySelector('.card').addEventListener('dragover', (e) => e.preventDefault());
+            document.querySelector('.card').addEventListener('drop', (e) => e.preventDefault());
         }
 
-        // Start everything
+        // Start
         init();
     })();
 </script>
